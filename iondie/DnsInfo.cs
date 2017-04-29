@@ -8,14 +8,21 @@ using System.Threading.Tasks;
 
 namespace iondie
 {
+    /// <summary>
+    /// Credit to http://ruchkinalexandr.blogspot.com/2012/02/c_06.html
+    /// </summary>
     class DnsInfo
     {
+        //DLLs used
         private const string KERNEL32 = "kernel32.dll";
         private const string NETAPI32 = "netapi32.dll";
         private const string DNSAPI = "dnsapi.dll";
 
         [DllImport(KERNEL32, SetLastError = true)]
         private static extern IntPtr LoadLibrary(String dllName);
+
+        [DllImport(KERNEL32, SetLastError = true)]
+        private static extern IntPtr FreeLibrary(IntPtr hModule);
 
         [DllImport(KERNEL32, CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
         private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
@@ -28,10 +35,10 @@ namespace iondie
 
         private struct DnsCacheEntry
         {
-            public IntPtr pNext;
+            public IntPtr pNext;    //pointer to next entry
             [MarshalAs(UnmanagedType.LPWStr)]
-            public string pszName;
-            public ushort wType;
+            public string pszName;  //DNS name entry
+            public ushort wType; 
             public ushort wDataLength;
             public ulong dwFlags;
 
@@ -51,25 +58,26 @@ namespace iondie
             var hModule = LoadLibrary(DNSAPI);
             var fptr = GetProcAddress(hModule, "DnsGetCacheDataTable");
 
-            GetDNSCacheInvoker drs = (GetDNSCacheInvoker)Marshal.GetDelegateForFunctionPointer(fptr, typeof(GetDNSCacheInvoker));
+            GetDNSCacheInvoker dumpCache = (GetDNSCacheInvoker)Marshal.GetDelegateForFunctionPointer(fptr, typeof(GetDNSCacheInvoker));
 
-            if (drs(out IntPtr dnsPtr))
+            if (dumpCache(out IntPtr dnsPtr))
             {
-                var dns = (DnsCacheEntry)Marshal.PtrToStructure(dnsPtr, typeof(DnsCacheEntry));
+                var dnsEntry = (DnsCacheEntry)Marshal.PtrToStructure(dnsPtr, typeof(DnsCacheEntry));
                 NetApiBufferFree(dnsPtr);
-                var current = dns.pNext;
+                var current = dnsEntry.pNext;
 
-                dnsCacheEntries.Add(new DnsEntry(dns.pszName, dns.wType));
+                dnsCacheEntries.Add(new DnsEntry(dnsEntry.pszName, dnsEntry.wType));
 
                 while (current != IntPtr.Zero)
                 {
-                    dns = (DnsCacheEntry)Marshal.PtrToStructure(current, typeof(DnsCacheEntry));
+                    dnsEntry = (DnsCacheEntry)Marshal.PtrToStructure(current, typeof(DnsCacheEntry));
                     var old = current;
-                    current = dns.pNext;
-                    dnsCacheEntries.Add(new DnsEntry(dns.pszName, dns.wType));
+                    current = dnsEntry.pNext;
+                    dnsCacheEntries.Add(new DnsEntry(dnsEntry.pszName, dnsEntry.wType));
                     NetApiBufferFree(old);
                 }
             }
+            FreeLibrary(hModule);
             return dnsCacheEntries;
         }
     }

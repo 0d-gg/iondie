@@ -16,7 +16,7 @@ namespace iondie
 
             foreach (var entry in results)
             {
-                Console.WriteLine(entry.Name + "\t" + Enum.GetName(typeof(DNS_RECORD_TYPE), entry.Type));
+                Console.WriteLine(entry.Name + "\t" + entry.TypeName);
             }
             Console.ReadKey();
         }
