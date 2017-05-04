@@ -76,7 +76,7 @@ namespace iondie
 
         private void UpdateTick(object sender, System.Timers.ElapsedEventArgs e)
         {
-            //set interval again:
+            //set interval again
             timer.Interval = GetInterval();
             //only update if the list changed
             if (GetDnsCacheEntries())

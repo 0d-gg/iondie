@@ -15,7 +15,7 @@ namespace iondie
         static void Main(string[] args)
         {
             spy = new DnsCacheSpy();
-            spy.StartWatching();
+            spy.StartWatching(2000);
             spy.Update += Spy_Update;
 
             Console.ReadKey();
@@ -23,12 +23,15 @@ namespace iondie
 
         private static void Spy_Update()
         {
-            if(spy.MasterList.Count != count)
+            var current_count = spy.MasterList.Count;
+            Console.WriteLine(current_count + " --- " + count);
+            if(current_count > count)
             {
                 for (int i = count; i < spy.MasterList.Count; i++)
                 {
                     Console.WriteLine(spy.MasterList[i].Name);
                 }
+                count = current_count;
             }
         }
     }
