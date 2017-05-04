@@ -3,24 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace iondie
 {
     class Program
     {
+        static DnsCacheSpy spy;
+        static int count = 0;
         static void Main(string[] args)
         {
-            var results = DnsInfo.GetDnsCacheEntries();
+            spy = new DnsCacheSpy();
+            spy.StartWatching();
+            spy.Update += Spy_Update;
 
-            Console.WriteLine(results.Count);
-
-            foreach (var entry in results)
-            {
-                Console.WriteLine(entry.Name + "\t" + entry.TypeName);
-            }
             Console.ReadKey();
         }
 
-
+        private static void Spy_Update()
+        {
+            if(spy.MasterList.Count != count)
+            {
+                for (int i = count; i < spy.MasterList.Count; i++)
+                {
+                    Console.WriteLine(spy.MasterList[i].Name);
+                }
+            }
+        }
     }
 }

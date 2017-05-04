@@ -43,7 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DnsEntry.cs" />
-    <Compile Include="DnsInfo.cs" />
+    <Compile Include="DnsCacheSpy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
